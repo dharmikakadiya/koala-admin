@@ -7,6 +7,7 @@ import { GrFormView } from "react-icons/gr";
 
 export default function Categories() {
   const [items, setItems] = useState([]);
+  console.log("🚀 ~ Categories ~ items:", items)
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -15,10 +16,10 @@ export default function Categories() {
 
   const [viewModal, setViewModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
-
+ 
   const slug = useMemo(
     () =>
-      name
+      (name || "")
         .trim()
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, "")
@@ -42,7 +43,9 @@ export default function Categories() {
   useEffect(() => {
     load();
   }, []);
-
+  items.map((c) => (
+    console.log("🚀 ~ Categories ~ c:", c.img))
+    )
   // ✅ Add Category with FormData
   const addCategory = async (e) => {
     e.preventDefault();
@@ -56,7 +59,7 @@ export default function Categories() {
       formData.append("title", n);
       formData.append("categories", JSON.stringify([]));
       if (image) {
-        formData.append("image", image);
+        formData.append("img", image);
       }
 
       const created = await api.post("/featuredCategories", formData, {
@@ -151,19 +154,13 @@ export default function Categories() {
                   <tr key={c.id} className="border-t">
                     {/* ✅ Image */}
                     <td className="px-4 py-3">
-                      {c.image ? (
-                        <img
-                          src={
-                            c.image.startsWith("http")
-                              ? c.image
-                              : `${import.meta.env.VITE_API_URL}/${c.image}`
-                          }
-                          alt={c.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      ) : (
-                        <span className="text-gray-400">No Image</span>
-                      )}
+                    {c?.img && (
+                      <img
+  src={`/src/assets/${c.img}`}
+  alt={c.title}
+  className="h-24 w-full rounded object-contain bg-slate-50"
+/>
+)}
                     </td>
 
                     <td className="px-4 py-3 font-semibold">{c.title}</td>

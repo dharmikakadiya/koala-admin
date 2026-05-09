@@ -237,19 +237,16 @@
       "id": "D5GWrCQAfuY"
     },
     {
-      "id": "tJ3sWcR5wA0",
-      "title": "table",
-      "image": "blob:http://localhost:5174/debfa0a8-586c-425a-a8bc-cfc043e341c7",
-      "categories": []
+      "id": "ylp7wmFR0V8"
     },
     {
-      "id": "SHL6yHUNDng",
-      "title": "dining",
-      "image": "blob:http://localhost:5174/7f9e1283-c952-4adf-a17c-f89f5d32304c",
-      "categories": []
+      "id": "r6O7bzDF4Ds"
     },
     {
-      "id": "KyqLYSetdEg"
+      "id": "gvLSpO7uMJQ"
+    },
+    {
+      "id": "HciEiF8ercM"
     }
   ],
   "secondaryBanner": {
@@ -535,7 +532,6 @@
       "qty": 1,
       "id": "DhTZrrzzEvc"
     }
-    
   ],
   "$schema": "./node_modules/json-server/schema.json"
 }
