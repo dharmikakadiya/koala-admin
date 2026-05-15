@@ -157,12 +157,12 @@ const [selectedProduct, setSelectedProduct] = useState(null);
 
       setItems(
         productsList.map((p) => {
-          const catSlug = p.category || p.subCategory || "";
+          const catSlug = p.category || "";
           const meta = catSlug ? localIndex.get(catSlug) : null;
           return {
             ...p,
             mainCategory: p.mainCategory || meta?.mainTitle || "-",
-            subCategory: p.subCategory || meta?.subName || catSlug || "-",
+            subCategory: p.subCategoryName || meta?.subName || catSlug || "-",
             color:
               p.color || (p.colors ? p.colors.map((c) => c.name).join(", ") : "-"),
           };
@@ -188,25 +188,26 @@ const [selectedProduct, setSelectedProduct] = useState(null);
       setError("Title required");
       return;
     }
-    if (!subCategory) {
-      setError("Sub Category required");
-      return;
-    }
+    // if (!subCategory) {
+    //   setError("Sub Category required");
+    //   return;
+    // }
 
     setError("");
     try {
+      const meta = categoryIndex.get(subCategory);
       const payload = {
         id: crypto?.randomUUID?.() ?? String(Date.now()),
         title: t,
-        category: subCategory, // stored as slug in /products
+        category: subCategory,
+        mainCategory: mainCategory || meta?.mainTitle || "",
+        subCategoryName: meta?.subName || "",
         price: parsedPrice,
         img: img || "placeholder.webp",
         color: color || "default",
       };
 
       const created = await api.post("/products", payload);
-
-      const meta = categoryIndex.get(payload.category);
       await syncUpsertToFeatured({
         product: created,
         mainTitle: mainCategory || meta?.mainTitle,
@@ -256,16 +257,19 @@ const [selectedProduct, setSelectedProduct] = useState(null);
         setError("Title required");
         return;
       }
-      if (!subCategory) {
-        setError("Sub Category required");
-        return;
-      }
+      // if (!subCategory) {
+      //   setError("Sub Category required");
+      //   return;
+      // }
 
       setError("");
       try {
+        const patchMeta = categoryIndex.get(subCategory);
         const patch = {
           title: t,
           category: subCategory,
+          mainCategory: mainCategory || patchMeta?.mainTitle || "",
+          subCategoryName: patchMeta?.subName || "",
           price: parsedPrice,
           img: img || "placeholder.webp",
           color: color || "default",
