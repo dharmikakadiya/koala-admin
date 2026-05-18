@@ -19,9 +19,12 @@ export default function Cart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Frontend "quantity" field use karta hai, admin "qty" — dono handle karo
+  const getQty = (item) => Number(item.quantity ?? item.qty ?? 0);
+
   const total = useMemo(() => {
     return (items || []).reduce(
-      (sum, i) => sum + (Number(i.qty) || 0) * (Number(i.price) || 0),
+      (sum, i) => sum + getQty(i) * (Number(i.price) || 0),
       0
     );
   }, [items]);
@@ -44,16 +47,18 @@ export default function Cart() {
   }, []);
 
   const setQty = async (id, nextQty) => {
-    const qty = Math.max(0, Number(nextQty) || 0);
+    const quantity = Math.max(0, Number(nextQty) || 0);
     setError("");
     const prev = items;
-    setItems((p) => p.map((x) => (x.id === id ? { ...x, qty } : x)));
+    setItems((p) =>
+      p.map((x) => (x.id === id ? { ...x, quantity, qty: quantity } : x))
+    );
     try {
-      if (qty === 0) {
+      if (quantity === 0) {
         await api.del(`/cart/${id}`);
         setItems((p) => p.filter((x) => x.id !== id));
       } else {
-        const updated = await api.patch(`/cart/${id}`, { qty });
+        const updated = await api.patch(`/cart/${id}`, { quantity });
         setItems((p) => p.map((x) => (x.id === id ? updated : x)));
       }
     } catch (e) {
@@ -79,7 +84,6 @@ export default function Cart() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-2xl font-bold text-slate-900">Cart</div>
-          
         </div>
         <div className="text-right">
           <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
@@ -107,8 +111,9 @@ export default function Cart() {
         <table className="w-full">
           <thead className="bg-slate-100/70 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
             <tr>
+              <th className="px-4 py-3">Image</th>
               <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Category</th>
+              <th className="px-4 py-3">Color</th>
               <th className="px-4 py-3">Price</th>
               <th className="px-4 py-3">Qty</th>
               <th className="px-4 py-3 text-right">Action</th>
@@ -117,29 +122,48 @@ export default function Cart() {
           <tbody className="text-sm">
             {loading ? (
               <tr>
-                <td className="px-4 py-10 text-center text-slate-500" colSpan={5}>
+                <td className="px-4 py-10 text-center text-slate-500" colSpan={6}>
                   Loading...
                 </td>
               </tr>
             ) : (
               items.map((x) => (
                 <tr key={x.id} className="border-t border-slate-200/70">
+                  <td className="px-4 py-3">
+                    {x.image && (
+                      <img
+                        src={x.image}
+                        alt={x.title}
+                        className="w-12 h-12 object-contain rounded-lg border border-slate-100"
+                      />
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-semibold text-slate-800">
                     {x.title}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{x.category}</td>
+                  <td className="px-4 py-3 text-slate-500">
+                    <div className="flex items-center gap-2">
+                      {x.colorHex && (
+                        <span
+                          className="inline-block w-4 h-4 rounded-full border border-slate-200"
+                          style={{ backgroundColor: x.colorHex }}
+                        />
+                      )}
+                      {x.colorName || x.category || "-"}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-slate-700">₹{x.price}</td>
                   <td className="px-4 py-3">
                     <div className="inline-flex items-center gap-2">
-                      <QtyButton onClick={() => setQty(x.id, (Number(x.qty) || 0) - 1)}>
+                      <QtyButton onClick={() => setQty(x.id, getQty(x) - 1)}>
                         <Minus size={16} />
                       </QtyButton>
                       <input
-                        value={x.qty ?? 0}
+                        value={getQty(x)}
                         onChange={(e) => setQty(x.id, e.target.value)}
                         className="w-16 rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-center text-sm outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                       />
-                      <QtyButton onClick={() => setQty(x.id, (Number(x.qty) || 0) + 1)}>
+                      <QtyButton onClick={() => setQty(x.id, getQty(x) + 1)}>
                         <Plus size={16} />
                       </QtyButton>
                     </div>
@@ -158,7 +182,7 @@ export default function Cart() {
             )}
             {!loading && items.length === 0 && (
               <tr>
-                <td className="px-4 py-10 text-center text-slate-500" colSpan={5}>
+                <td className="px-4 py-10 text-center text-slate-500" colSpan={6}>
                   Cart is empty.
                 </td>
               </tr>
@@ -169,4 +193,3 @@ export default function Cart() {
     </div>
   );
 }
-
