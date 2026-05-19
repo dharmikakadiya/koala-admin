@@ -1,6 +1,6 @@
 const BASE_URL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") ||
-  "http://localhost:5000";
+  "https://project-data-nfvi.onrender.com";
 
 async function request(path, options = {}) {
   try {
