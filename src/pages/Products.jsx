@@ -76,7 +76,6 @@ const [selectedProduct, setSelectedProduct] = useState(null);
       return { ...s, products: upsert(s.products) };
     });
 
-    // optimistic local update
     setCategoriesData((prev) =>
       (prev || []).map((c) =>
         String(c.id) === String(main.id)
@@ -108,7 +107,6 @@ const [selectedProduct, setSelectedProduct] = useState(null);
 
     if (touched.length === 0) return;
 
-    // optimistic local update
     setCategoriesData((prev) =>
       (prev || []).map((main) => {
         const mainProducts = remove(main.products);
@@ -180,7 +178,6 @@ const [selectedProduct, setSelectedProduct] = useState(null);
     load();
   }, []);
 
-
   const addProduct = async (e) => {
     e.preventDefault();
     const t = title.trim();
@@ -188,10 +185,6 @@ const [selectedProduct, setSelectedProduct] = useState(null);
       setError("Title required");
       return;
     }
-    // if (!subCategory) {
-    //   setError("Sub Category required");
-    //   return;
-    // }
 
     setError("");
     try {
@@ -257,10 +250,6 @@ const [selectedProduct, setSelectedProduct] = useState(null);
         setError("Title required");
         return;
       }
-      // if (!subCategory) {
-      //   setError("Sub Category required");
-      //   return;
-      // }
 
       setError("");
       try {
@@ -331,7 +320,6 @@ const [selectedProduct, setSelectedProduct] = useState(null);
   const subCategories =
     categoriesData.find((c) => c.title === mainCategory)?.categories || [];
 
-  // ✅ SAFE columns
   const columns = [
     {
       name: "Image",
@@ -350,30 +338,34 @@ const [selectedProduct, setSelectedProduct] = useState(null);
     {
       name: "Title",
       selector: (row) => row.title || "-",
+      width: "150px",
     },
     {
       name: "Main",
       selector: (row) => row.mainCategory || "-",
+      width: "120px",
     },
     {
       name: "Sub",
       selector: (row) => row.subCategory || "-",
+      width: "120px",
     },
     {
       name: "Price",
       selector: (row) => `₹${row.price || 0}`,
+      width: "90px",
     },
     {
       name: "Color",
       cell: (row) => {
         const colors = row.color ? row.color.split(", ") : [];
         return (
-          <div>
+          <div className="flex flex-wrap gap-1 py-1">
             {colors.length > 0 ? (
               colors.map((c, i) => (
                 <span
                   key={i}
-                  className="mr-1 px-2 py-1 bg-gray-200 rounded text-xs"
+                  className="px-2 py-0.5 bg-gray-200 rounded text-xs whitespace-nowrap"
                 >
                   {c}
                 </span>
@@ -384,13 +376,12 @@ const [selectedProduct, setSelectedProduct] = useState(null);
           </div>
         );
       },
+      width: "110px",
     },
     {
       name: "Action",
       cell: (row) => (
         <div className="flex gap-3 text-lg">
-    
-          {/* 👁 VIEW */}
           <FaEye
             className="cursor-pointer text-indigo-600"
             onClick={() => {
@@ -398,14 +389,10 @@ const [selectedProduct, setSelectedProduct] = useState(null);
               setViewModal(true);
             }}
           />
-    
-          {/* ✏️ EDIT */}
           <FaRegEdit
             className="cursor-pointer text-green-600"
             onClick={() => handleEdit(row)}
           />
-    
-          {/* 🗑 DELETE */}
           <Trash2
             size={16}
             className="cursor-pointer text-red-600"
@@ -413,36 +400,40 @@ const [selectedProduct, setSelectedProduct] = useState(null);
           />
         </div>
       ),
+      width: "100px",
     }
   ];
 
   return (
-    <div className="grid gap-6 xl:grid-cols-3">
+    <div className="flex flex-col xl:flex-row gap-6">
       {/* TABLE */}
-      <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow">
+      <div className="flex-1 min-w-0 bg-white p-4 sm:p-6 rounded-2xl shadow">
         <h1 className="text-xl font-bold mb-4">
           Products ({items.length})
         </h1>
 
         {error && <div className="text-red-500 mb-2">{error}</div>}
 
-        <DataTable
-          columns={columns}
-          data={items || []}
-          progressPending={loading}
-          pagination
-          paginationPerPage={rowsPerPage}
-          paginationRowsPerPageOptions={[5, 10, 15, 20, 30, 50]}
-          onChangeRowsPerPage={(newPerPage) => setRowsPerPage(newPerPage)}
-          paginationComponentOptions={{
-            rowsPerPageText: "Rows per page",
-            rangeSeparatorText: "of",
-            noRowsPerPage: false,
-            selectAllRowsItem: false,
-            selectAllRowsItemText: "All",
-          }}
-          highlightOnHover
-        />
+        {/* Horizontal scroll wrapper for mobile */}
+        <div className="w-full overflow-x-auto">
+          <DataTable
+            columns={columns}
+            data={items || []}
+            progressPending={loading}
+            pagination
+            paginationPerPage={rowsPerPage}
+            paginationRowsPerPageOptions={[5, 10, 15, 20, 30, 50]}
+            onChangeRowsPerPage={(newPerPage) => setRowsPerPage(newPerPage)}
+            paginationComponentOptions={{
+              rowsPerPageText: "Rows per page",
+              rangeSeparatorText: "of",
+              noRowsPerPage: false,
+              selectAllRowsItem: false,
+              selectAllRowsItemText: "All",
+            }}
+            highlightOnHover
+          />
+        </div>
 
         <button onClick={load} className="mt-4 border px-4 py-2 rounded">
           Refresh
@@ -450,7 +441,7 @@ const [selectedProduct, setSelectedProduct] = useState(null);
       </div>
 
       {/* FORM */}
-      <div className="bg-white p-6 rounded-2xl shadow">
+      <div className="w-full xl:w-80 flex-shrink-0 bg-white p-4 sm:p-6 rounded-2xl shadow">
         <h2 className="font-bold mb-3">
           {editId ? "Edit Product" : "Add Product"}
         </h2>
@@ -529,7 +520,6 @@ const [selectedProduct, setSelectedProduct] = useState(null);
               } catch (err) {
                 setError(err?.message || "Failed to read image");
               } finally {
-                // allow re-upload same file
                 e.target.value = "";
               }
             }}
@@ -552,11 +542,11 @@ const [selectedProduct, setSelectedProduct] = useState(null);
           </button>
         </form>
         {viewModal && (
-  <ViewProduct
-    data={selectedProduct}
-    onClose={() => setViewModal(false)}
-  />
-)}
+          <ViewProduct
+            data={selectedProduct}
+            onClose={() => setViewModal(false)}
+          />
+        )}
       </div>
     </div>
   );
